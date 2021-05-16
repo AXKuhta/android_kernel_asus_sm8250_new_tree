@@ -36,11 +36,6 @@ extern int g_user_dbg_mode;
 extern char evtlog_bootup_reason[50];
 char evtlog_poweroff_reason[50];
 
-#ifdef CONFIG_PON_EVT_LOG
-char evtlog_pon_dump[100]; 
-#endif
-
-extern int ASUSEvt_poweroff_reason;
 static const char * const ASUSEvt_poweroff_reason_str[] = {
 	/* QPNP_PON_GEN1 POFF reasons */
 	[0] = "[Soft reset]",
@@ -761,7 +756,6 @@ void delta_all_thread_info(void)
 EXPORT_SYMBOL(delta_all_thread_info);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void printk_buffer_rebase(void);
 static mm_segment_t oldfs;
 static void initKernelEnv(void)
 {
@@ -922,13 +916,6 @@ void save_rtb_log(void)
 
 void get_last_shutdown_log(void)
 {
-	ulong *printk_buffer_slot2_addr;
-
-	printk_buffer_slot2_addr = (ulong *)PRINTK_BUFFER_SLOT2;
-	printk("get_last_shutdown_log: printk_buffer_slot2=%x, value=0x%lx\n", printk_buffer_slot2_addr, *printk_buffer_slot2_addr);
-	if (*printk_buffer_slot2_addr == (ulong)PRINTK_BUFFER_MAGIC)
-		save_last_shutdown_log("LastShutdown");
-	printk_buffer_rebase();
 }
 EXPORT_SYMBOL(get_last_shutdown_log);
 
@@ -1002,27 +989,6 @@ static void do_write_event_worker(struct work_struct *work)
 			ksys_unlink(ASUS_EVTLOG_PATH ".txt");
 			g_hfileEvtlog = ksys_open(ASUS_EVTLOG_PATH ".txt", O_CREAT | O_RDWR | O_SYNC, 0666);
 		}
-
-		if (ASUSEvt_poweroff_reason < 0)
-			strcpy(evtlog_poweroff_reason, "[Power lost][Unknown]");
-		else
-			strcpy(evtlog_poweroff_reason, ASUSEvt_poweroff_reason_str[ASUSEvt_poweroff_reason]);
-
-		sprintf(buffer, "\n\n---------------System Boot----%s---------\n"
-			"[Shutdown] Power off Reason: 0x%x => %s; (last time) ######\n"
-			"###### Bootup Reason: %s ######\n",
-			ASUS_SW_VER,
-			(ASUSEvt_poweroff_reason < 0) ? 0 : 1 << ASUSEvt_poweroff_reason,
-			evtlog_poweroff_reason, evtlog_bootup_reason);
-
-		ksys_write(g_hfileEvtlog, buffer, strlen(buffer));
-
-	#ifdef CONFIG_PON_EVT_LOG 
-		//sys_fsync(g_hfileEvtlog);
-		snprintf(buffer, sizeof(buffer),
-		        "[PON Dump] %s \n",evtlog_pon_dump);
-		ksys_write(g_hfileEvtlog, buffer, strlen(buffer));
-	#endif
 
 		ksys_close(g_hfileEvtlog);
 	}
