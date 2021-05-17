@@ -436,6 +436,7 @@ struct usbpd {
 
 	int			bms_charge_full;
 	int			bat_voltage_max;
+	int 			vendor_id;
 
 	enum power_supply_typec_mode typec_mode;
 	enum power_supply_typec_power_role forced_pr;
@@ -503,7 +504,6 @@ struct usbpd {
 	u8			get_battery_status_db;
 	bool			send_get_battery_status;
 	u32			battery_sts_dobj;
-	int 			vendor_id;
 };
 
 int asus_vid = -1;
