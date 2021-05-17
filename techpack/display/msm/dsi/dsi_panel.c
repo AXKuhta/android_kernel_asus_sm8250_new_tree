@@ -516,14 +516,11 @@ exit:
 	return rc;
 }
 
-extern struct timer_list unattended_timer; /* unattended_timer_expired() kernel/kernel/power/suspend.c*/
 static int dsi_panel_power_off(struct dsi_panel *panel)
 {
 	int rc = 0;
 
 	pr_err("[Display] panel power off +++\n");
-
-	mod_timer(&unattended_timer, jiffies + msecs_to_jiffies(1000*60*5));
 
 //	fts_ts_suspend();
 	
